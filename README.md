@@ -40,7 +40,7 @@ Aşağıdaki teknoloji yığını, yüksek trafikli sistemlerin ihtiyaçları ol
 
 Bu bölümde, bir **Principal Architect** perspektifiyle sistemin kritik problemleri nasıl çözdüğünü anlatıyoruz.
 
-### 1\. Race Condition & Concurrency (Eşzamanlılık) Çözümü
+### 1\. Race Condition & Concurrency Çözümü
 
 Geleneksel yaklaşım:
 
@@ -68,7 +68,7 @@ Basit akış:
     
     -   `if stock > 0 then stock-- else return SOLD_OUT end`
         
-3.  Script **ya tamamen başarılı olur ya tamamen başarısız olur** (atomicity).
+3.  Script **ya tamamen başarılı olur ya tamamen başarısız olur**.
     
 
 **Sonuç:**
@@ -84,11 +84,11 @@ Basit akış:
 
 * * *
 
-### 2\. Gatekeeper Pattern (Kapı Bekçisi Deseni)
+### 2\. Gatekeeper Pattern
 
 Sistemi korumak için ilk savunma hattı **stok seviyesi**dir.
 
--   Stok yoksa istek **anında reddedilir** (**Fail Fast**).
+-   Stok yoksa istek **anında reddedilir**.
     
 -   Veritabanı, RabbitMQ ve diğer servisler gereksiz yükten kurtulur.
     
@@ -103,7 +103,7 @@ Akış:
     
     -   Başarılı → Event kuyruğa yazılır, sipariş süreci devam eder.
         
-    -   Başarısız (stok yok) → Anında `HTTP 409` / `400` benzeri iş kuralı hatası döner.
+    -   Başarısız → Anında `HTTP 409` / `400` benzeri iş kuralı hatası döner.
         
 
 Bu sayede:
@@ -115,7 +115,7 @@ Bu sayede:
 
 * * *
 
-### 3\. Asenkron Sipariş İşleme (Event-Driven Order Processing)
+### 3\. Asenkron Sipariş İşleme 
 
 Kritik karar: **Kullanıcı “Satın Al” dediğinde, sipariş senkron olarak veritabanına yazılmaz.**
 
@@ -125,7 +125,7 @@ Bunun yerine:
     
     -   Sipariş isteği **RabbitMQ Exchange**’ine event olarak publish edilir.
         
-2.  Queue → Consumer (Worker Service):
+2.  Queue → Consumer:
     
     -   Kuyruktan mesajı çeker.
         
@@ -138,16 +138,16 @@ Bunun yerine:
 
 **Kazançlar:**
 
--   API yanıt süresi kısalır (DB transaction beklemez).
+-   API yanıt süresi kısalır.
     
--   Worker sayıları yatayda ölçeklenebilir (scale-out).
+-   Worker sayıları yatayda ölçeklenebilir.
     
 -   **Backpressure**: Veritabanı kapasitesi kadar iş işlenir; gerisi kuyrukta bekler.
     
 
 * * *
 
-### 4\. Gerçek Zamanlı Bildirimler (Real-Time UX)
+### 4\. Gerçek Zamanlı Bildirimler
 
 Kullanıcı deneyimi açısından:
 
@@ -178,7 +178,7 @@ Projeyi yerel ortamda çalıştırmak için **yalnızca Docker yüklü olması**
 
 ## 
 
-`git clone https://github.com/tarikinandi/TicketRush.git cd TicketRush`
+```git clone https://github.com/tarikinandi/TicketRush.git```
 
 ### 2\. Tüm Sistemi Docker Compose ile Başlatın
 
@@ -197,7 +197,7 @@ Aşağıdaki komut, aşağıdaki bileşenleri ayağa kaldırır:
 -   TicketRush Frontend (React)
     
 
-`docker-compose up --build`
+```docker-compose up --build```
 
 ### 3\. Servis Adresleri
 
@@ -216,7 +216,7 @@ Aşağıdaki komut, aşağıdaki bileşenleri ayağa kaldırır:
 
 ---
 
-## Yük Testi (Load Testing) ve Kanıtlar
+## Load Testing ve Kanıtlar
 
 Sistemin dayanıklılığını ve race condition senaryolarındaki davranışını göstermek için, proje içerisinde Node.js tabanlı bir yük testi script’i bulunmaktadır: load-test.js
 
@@ -279,7 +279,7 @@ Hatalar (Crash/Bug): 0
 
 Genel klasör yapısı:
 
-TicketRush/
+### TicketRush
 
 ├── ticketrush-backend/          # Spring Boot Uygulaması
 
