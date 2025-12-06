@@ -1,13 +1,7 @@
 package com.ticketrush.service;
 
-import com.ticketrush.domain.Order;
-import com.ticketrush.domain.TicketEvent;
-import com.ticketrush.domain.User;
 import com.ticketrush.dto.TicketRequest;
-import com.ticketrush.repository.OrderRepository;
-import com.ticketrush.repository.TicketEventRepository;
-import com.ticketrush.repository.UserRepository;
-import exception.TicketSoldOutException;
+import com.ticketrush.exception.TicketSoldOutException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
