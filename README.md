@@ -44,7 +44,10 @@ Bu bölümde, bir **Principal Architect** perspektifiyle sistemin kritik problem
 
 Geleneksel yaklaşım:
 
-`SELECT stock FROM tickets WHERE id = ?; IF stock > 0 THEN     UPDATE tickets SET stock = stock - 1 WHERE id = ?; END IF;`
+```
+SELECT stock FROM tickets WHERE id = ?; IF stock > 0 THEN     
+UPDATE tickets SET stock = stock - 1 WHERE id = ?; END IF;
+```
 
 Yüksek trafikte aynı satır için birden fazla işlem yarıştığında:
 
