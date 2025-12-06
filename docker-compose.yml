@@ -1,0 +1,82 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: ticketrush-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ticketrush
+    ports:
+      - "5433:5432" 
+    volumes:
+      - postgres_data_v2:/var/lib/postgresql/data
+    networks:
+      - ticket-network
+    healthcheck: 
+      test: ["CMD-SHELL", "pg_isready -U admin -d ticketrush"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: ticketrush_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ticket-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ticketrush-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - ticket-network
+
+  backend:
+    build: ./TicketRush 
+    container_name: ticketrush-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy #
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ticketrush
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: admin
+      SPRING_RABBITMQ_PASSWORD: password
+    networks:
+      - ticket-network
+
+  frontend:
+    build: ./ticketrush-ui 
+    container_name: ticketrush-ui
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./ticketrush-ui/src:/app/src 
+    networks:
+      - ticket-network
+
+volumes:
+  postgres_data_v2:
+
+networks:
+  ticket-network:
+    driver: bridge
