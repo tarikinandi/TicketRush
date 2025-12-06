@@ -284,38 +284,40 @@ Genel klasör yapısı:
 
 ### TicketRush
 
-├── ticketrush-backend/          # Spring Boot Uygulaması
+├── TicketRush/          
 
 │   ├── src/main/java/com/ticketrush/
 
-│   │   ├── config/              # RabbitMQ, Redis, WebSocket Konfigürasyonları
+│   │   ├── config/              
 
-│   │   ├── controller/          # REST Endpoint'ler
+│   │   ├── controller/ 
 
-│   │   ├── service/             # İş Mantığı (Producer, Redis Service)
+│   │   ├── domain/         
 
-│   │   ├── listener/            # RabbitMQ Consumer
+│   │   ├── dto/ 
 
-│   │   └── exception/           # Global Hata Yönetimi
+│   │   ├── service/             
 
-│   └── Dockerfile
+│   │   ├── repository/ 
 
-│
-
-├── ticketrush-ui/               # React Uygulaması
-
-│   ├── src/components/          # Dashboard ve UI Bileşenleri
-
-│   ├── src/services/            # API İstekleri (Axios)
+│   │   └── exception/           
 
 │   └── Dockerfile
 
 │
 
-├── docker-compose.yml           # Orkestrasyon Dosyası
+├── ticketrush-ui/               
 
-└── load-test.js                 # Yük Testi Script'i
+│   ├── src/components/          
 
+│   ├── src/services/           
+
+│   └── Dockerfile
+
+│
+
+├── docker-compose.yml           
+└── load-test.js                 
 
 ---
 
