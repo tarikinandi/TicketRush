@@ -19,31 +19,6 @@ Amaç, binlerce kullanıcının aynı anda “Satın Al” butonuna bastığı d
 
 ---
 
-## Mimari Tasarım 
-
-Proje, modern mikroservis prensipleri ile tasarlanmış, **Docker** üzerinde çalışan izole servisler ve olay güdümlü iletişim yapısı kullanır.
-
-```mermaid
-    Client[React Frontend] -- HTTP POST --> LB[Spring Boot API]
-    Client -- WebSocket Sub --> WSB[STOMP Broker]
-
-    subgraph Backend Services
-        LB -- 1. Atomic Decrement --> Redis[(Redis Cache)]
-        LB -- 2. Publish Event --> RMQ[RabbitMQ Exchange]
-        RMQ -- Routing Key --> Queue[Ticket Queue]
-        Queue -- Consume --> Worker[Consumer Service]
-    end
-
-    subgraph Persistence
-        Worker -- 3. Persist Order --> DB[(PostgreSQL)]
-    end
-
-    Worker -- 4. Push Notification --> WSB
-    WSB -- 5. Update UI --> Client
-```
-
----
-
 ## Teknoloji Yığını
 
 Aşağıdaki teknoloji yığını, yüksek trafikli sistemlerin ihtiyaçları olan **ölçeklenebilirlik**, **tutarlılık** ve **performans** kriterlerine göre seçildi.
