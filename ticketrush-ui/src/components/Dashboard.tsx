@@ -56,7 +56,7 @@ const Dashboard = () => {
   const handleBuy = async () => {
         setLoading(true);
         try {
-            await buyTicket(myUserId, 1, 1);
+            await buyTicket(myUserId, 1);
         } catch (error: any) {
             console.error("Hata Detayı:", error);
             
