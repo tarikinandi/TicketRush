@@ -270,7 +270,7 @@ Hatalar (Crash/Bug): 0
 
 #### MÜKEMMEL: Sistem tam beklendiği gibi davrandı!
 
-#### Bu sonuç, sistemin: Tutarlı (consistency garantili), Dayanıklı, Backpressure uygulayan bir yapıda çalıştığını gösterir.
+#### Bu sonuç, sistemin: Tutarlı, Dayanıklı, Backpressure uygulayan bir yapıda çalıştığını gösterir.
 
 
 ---
