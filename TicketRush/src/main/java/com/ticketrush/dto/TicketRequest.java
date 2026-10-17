@@ -12,5 +12,7 @@ import java.io.Serializable;
 public class TicketRequest implements Serializable {
     private Long userId;
     private Long eventId;
+    // Null outside the demo.
+    private String visitorId;
 
 }

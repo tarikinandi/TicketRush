@@ -12,14 +12,17 @@ public class TicketService {
     private final TicketRedisService ticketRedisService;
     private final TicketQueue ticketQueue;
 
-    public void buyTicket(Long userId, Long eventId){
+    /** visitorId is null outside the demo, which keeps the original shared-stock behaviour. */
+    public void buyTicket(Long userId, Long eventId, String visitorId){
 
-        boolean success = ticketRedisService.tryDecreaseStock(eventId);
+        boolean success = visitorId == null
+                ? ticketRedisService.tryDecreaseStock(eventId)
+                : ticketRedisService.tryDecreaseVisitorStock(eventId, visitorId);
         if (!success) {
             throw new TicketSoldOutException("Üzgünüz, bu etkinlik için tüm biletler tükendi! Stok: 0");
         }
 
-        ticketQueue.send(new TicketRequest(userId, eventId));
+        ticketQueue.send(new TicketRequest(userId, eventId, visitorId));
 
         System.out.println("User " + userId + " request send to queue.");
     }

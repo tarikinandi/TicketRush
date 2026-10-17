@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "orders")
+@Table(name = "orders", indexes = @jakarta.persistence.Index(columnList = "visitorId"))
 @Builder
 public class Order extends BaseEntity{
 
@@ -25,4 +25,7 @@ public class Order extends BaseEntity{
     private TicketEvent event;
 
     private BigDecimal paidAmount;
+
+    // Set only in the public demo, where every visitor has a private stock.
+    private String visitorId;
 }

@@ -1,7 +1,7 @@
 import { Client } from "@stomp/stompjs";
 import { useEffect, useRef, useState } from "react";
 import SockJS from "sockjs-client";
-import { buyTicket, BASE_URL } from "../services/api";
+import { buyTicket, getStock, getVisitorId, BASE_URL } from "../services/api";
 
 interface NotificationMessage {
     id: string;
@@ -13,6 +13,14 @@ const Dashboard = () => {
     const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
     const [status, setStatus] = useState<string>("Bağlanıyor...");
     const [loading, setLoading] = useState(false);
+    const [stock, setStock] = useState<number | null>(null);
+    const visitorId = getVisitorId();
+
+    const refreshStock = () => {
+        getStock(1).then(setStock).catch(() => setStock(null));
+    };
+
+    useEffect(refreshStock, []);
 
     const [myUserId] = useState(Math.floor(Math.random() * 1000) + 1);
 
@@ -26,7 +34,7 @@ const Dashboard = () => {
             onConnect: () => {
                 setStatus("Canlı Bağlantı Sağlandı");
 
-                client.subscribe('/topic/notifications', (message) => {
+                const onMessage = (message: { body: string }) => {
                     const newMsg: NotificationMessage = {
                         id: Date.now().toString() + Math.random().toString(),
                         content: message.body,
@@ -34,7 +42,9 @@ const Dashboard = () => {
                     };
 
                     setNotifications((prev) => [newMsg, ...prev].slice(0, 50));
-                });
+                    refreshStock();
+                };
+                client.subscribe(`/topic/notifications/${visitorId}`, onMessage);
             },
             onDisconnect: () => {
                 setStatus("Bağlantı Kesildi"); 
@@ -51,12 +61,13 @@ const Dashboard = () => {
         return () => {
             client.deactivate();
         };
-    }, []);
+    }, [visitorId]);
 
   const handleBuy = async () => {
         setLoading(true);
         try {
             await buyTicket(myUserId, 1);
+            refreshStock();
         } catch (error: any) {
             console.error("Hata Detayı:", error);
             
@@ -86,6 +97,10 @@ const Dashboard = () => {
                     <h2 className="text-2xl font-bold">Tarkan Konseri</h2>
                     <span className="bg-blue-600 text-xs px-2 py-1 rounded-full font-semibold">EVENT #1</span>
                 </div>
+                <p className="text-gray-400 mb-2 flex justify-between">
+                    <span>Kalan biletin (sana özel):</span>
+                    <span className="text-white font-bold">{stock ?? "-"}</span>
+                </p>
                 <p className="text-gray-400 mb-6 flex justify-between">
                     <span>Fiyat:</span>
                     <span className="text-green-400 font-bold">500.00 TL</span>

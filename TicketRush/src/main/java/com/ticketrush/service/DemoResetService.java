@@ -1,54 +1,42 @@
 package com.ticketrush.service;
 
-import com.ticketrush.domain.TicketEvent;
-import com.ticketrush.repository.OrderRepository;
-import com.ticketrush.repository.TicketEventRepository;
+import com.ticketrush.repository.VisitorStockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-/** Public demo only: periodically puts every event back to its seeded stock so it never stays sold out. */
+/**
+ * Public demo janitor: visitor stocks and their orders are dropped once idle for the TTL.
+ * Redis visitor keys expire on their own (EXPIRE), so Redis is never scanned or flushed.
+ */
 @Service
 @Profile("demo")
 @RequiredArgsConstructor
 public class DemoResetService {
 
-    private final TicketEventRepository ticketEventRepository;
-    private final OrderRepository orderRepository;
-    private final TicketRedisService ticketRedisService;
-    private final InMemoryTicketQueue queue;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final VisitorStockRepository visitorStockRepository;
     private final TransactionTemplate transactionTemplate;
 
-    @Value("${ticketrush.demo.seed-stock:10}")
-    private int seedStock;
+    @Value("${ticketrush.demo.visitor-ttl-hours:24}")
+    private long ttlHours;
 
     @Scheduled(initialDelayString = "${ticketrush.demo.reset-minutes:30}",
             fixedDelayString = "${ticketrush.demo.reset-minutes:30}",
             timeUnit = TimeUnit.MINUTES)
-    public void reset() {
-        queue.runExclusively(() -> {
-            List<Long> eventIds = transactionTemplate.execute(status -> {
-                // Orders reference events, so they go first.
-                orderRepository.deleteAllInBatch();
-                List<TicketEvent> events = ticketEventRepository.findAll();
-                events.forEach(e -> e.setStock(seedStock));
-                return events.stream().map(TicketEvent::getId).toList();
-            });
-            // Redis is touched only after the DB commit, and only for our own keys.
-            if (eventIds != null) {
-                eventIds.forEach(id -> ticketRedisService.setInitialStock(id, seedStock));
-            }
-        });
-        messagingTemplate.convertAndSend("/topic/notifications",
-                "Demo sıfırlandı: stok " + seedStock + " bilete geri döndü.");
-        System.out.println("DEMO RESET: stok " + seedStock + " olarak yenilendi.");
+    public void cleanup() {
+        LocalDateTime cutoff = LocalDateTime.now().minusHours(ttlHours);
+        int[] removed = transactionTemplate.execute(status -> new int[]{
+                // Orders first: they are matched through the stale visitor rows.
+                visitorStockRepository.deleteOrdersOfStaleVisitors(cutoff),
+                visitorStockRepository.deleteStale(cutoff)});
+        if (removed != null && (removed[0] > 0 || removed[1] > 0)) {
+            System.out.println("DEMO CLEANUP: " + removed[0] + " siparis, " + removed[1] + " ziyaretci stoku silindi.");
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.ticketrush.domain.TicketEvent;
 import com.ticketrush.domain.User;
 import com.ticketrush.repository.TicketEventRepository;
 import com.ticketrush.repository.UserRepository;
+import com.ticketrush.service.ReadinessState;
 import com.ticketrush.service.TicketRedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,7 @@ public class DataSeeder implements CommandLineRunner {
     private final TicketEventRepository ticketEventRepository;
     private final UserRepository userRepository;
     private final TicketRedisService ticketRedisService;
+    private final ReadinessState readiness;
 
     @Value("${ticketrush.demo.seed-stock:10}")
     private int seedStock;
@@ -57,6 +59,7 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println(" Kullanıcılar Oluşturuldu.");
         }
 
+        readiness.markReady();
         System.out.println("--- SİSTEM HAZIR ---");
     }
 }

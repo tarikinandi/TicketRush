@@ -341,12 +341,15 @@ Backend (Docker image in `TicketRush/`):
 - `DB_URL` (JDBC URL), `DB_USERNAME`, `DB_PASSWORD`, `DB_POOL_SIZE` (optional, default 5)
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_SSL` (`true` for TLS providers)
 - `REDIS_KEY_PREFIX` (optional; prefixes every Redis key so one Redis can be shared, e.g. `ticketrush:`)
-- `DEMO_RESET_MINUTES` (optional, default 30; every N minutes the demo deletes all orders and restores each event's stock)
-- `DEMO_SEED_STOCK` (optional, default 10; the stock the demo is seeded with and reset to)
+- `DEMO_SEED_STOCK` (optional, default 10; every visitor gets this many tickets of their own, so one visitor selling out never affects another)
+- `DEMO_RESET_MINUTES` (optional, default 30; how often the janitor job runs)
+- `DEMO_VISITOR_TTL_HOURS` (optional, default 24; idle visitors' Redis keys expire and their DB stock rows and orders are deleted after this long)
 - `CORS_ORIGINS` (comma-separated frontend origins, also used for the WebSocket endpoint)
 - `JAVA_OPTS` (optional; default `-Xmx300m -XX:+UseSerialGC` for 512 MB instances)
 
-Health check: `GET /api/health`.
+Health check: `GET /api/health` (503 until the seed data is ready, then 200).
+
+In demo mode the API requires an `X-Visitor-Id` header (the UI creates one per browser). Stock, orders and WebSocket notifications (`/topic/notifications/{visitorId}`) are per visitor; `GET /api/tickets/events/{id}/stock` returns the visitor's own remaining stock.
 
 Frontend (`ticketrush-ui/`, built by Vite):
 
