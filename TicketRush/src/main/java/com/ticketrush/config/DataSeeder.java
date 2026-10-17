@@ -6,6 +6,7 @@ import com.ticketrush.repository.TicketEventRepository;
 import com.ticketrush.repository.UserRepository;
 import com.ticketrush.service.TicketRedisService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,9 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final TicketRedisService ticketRedisService;
 
+    @Value("${ticketrush.demo.seed-stock:10}")
+    private int seedStock;
+
     @Override
     public void run(String... args) throws Exception {
         if (ticketEventRepository.count() == 0) {
@@ -29,10 +33,10 @@ public class DataSeeder implements CommandLineRunner {
                     .name("Tarkan Konseri")
                     .eventDate(LocalDateTime.now().plusDays(10))
                     .price(new BigDecimal("500.00"))
-                    .stock(10)
+                    .stock(seedStock)
                     .build();
             ticketEventRepository.save(event);
-            ticketRedisService.setInitialStock(event.getId(), 10);
+            ticketRedisService.setInitialStock(event.getId(), seedStock);
             System.out.println(" Etkinlik Oluşturuldu.");
         } else {
             // Redis must mirror what is really left in the DB, otherwise a restart would resell tickets.

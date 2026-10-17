@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 /** Broker-free stand-in for RabbitMQ: same producer/consumer split, inside one JVM. */
 @Service
@@ -19,6 +20,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class InMemoryTicketQueue implements TicketQueue {
 
     private final BlockingQueue<TicketRequest> queue = new LinkedBlockingQueue<>();
+    // Held while a worker processes a ticket, so the demo reset can wait for it and then clear the queue.
+    private final ReentrantLock workLock = new ReentrantLock();
     private final List<Thread> workers = new ArrayList<>();
     private final TicketConsumer consumer; // Spring proxy, so @Transactional applies
     private final int workerCount;
@@ -52,12 +55,29 @@ public class InMemoryTicketQueue implements TicketQueue {
     private void drain() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                consumer.consumeTicket(queue.take());
+                TicketRequest request = queue.take();
+                workLock.lock();
+                try {
+                    consumer.consumeTicket(request);
+                } finally {
+                    workLock.unlock();
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (RuntimeException e) {
                 System.err.println("QUEUE WORKER HATASI: " + e.getMessage());
             }
+        }
+    }
+
+    /** Runs the action with workers paused and the pending queue emptied. */
+    public void runExclusively(Runnable action) {
+        workLock.lock();
+        try {
+            queue.clear();
+            action.run();
+        } finally {
+            workLock.unlock();
         }
     }
 }

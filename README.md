@@ -341,6 +341,8 @@ Backend (Docker image in `TicketRush/`):
 - `DB_URL` (JDBC URL), `DB_USERNAME`, `DB_PASSWORD`, `DB_POOL_SIZE` (optional, default 5)
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_SSL` (`true` for TLS providers)
 - `REDIS_KEY_PREFIX` (optional; prefixes every Redis key so one Redis can be shared, e.g. `ticketrush:`)
+- `DEMO_RESET_MINUTES` (optional, default 30; every N minutes the demo deletes all orders and restores each event's stock)
+- `DEMO_SEED_STOCK` (optional, default 10; the stock the demo is seeded with and reset to)
 - `CORS_ORIGINS` (comma-separated frontend origins, also used for the WebSocket endpoint)
 - `JAVA_OPTS` (optional; default `-Xmx300m -XX:+UseSerialGC` for 512 MB instances)
 
