@@ -1,6 +1,7 @@
 package com.ticketrush.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,10 @@ public class TicketRedisService {
 
     private final StringRedisTemplate stringRedisTemplate;
 
+    // Lets several apps share one Redis; empty by default.
+    @Value("${ticketrush.redis.key-prefix:}")
+    private String keyPrefix;
+
     private final String DECREMENT_STOCK_LUA =
             "local stock = redis.call('get', KEYS[1]) " +
                     "if stock and tonumber(stock) > 0 then " +
@@ -23,12 +28,12 @@ public class TicketRedisService {
                     "end";
 
     public void setInitialStock(Long eventId, int stock) {
-        String key = "event_stock:" + eventId;
+        String key = keyPrefix + "event_stock:" + eventId;
         stringRedisTemplate.opsForValue().set(key, String.valueOf(stock));
     }
 
     public boolean tryDecreaseStock(Long eventId) {
-        String key = "event_stock:" + eventId;
+        String key = keyPrefix + "event_stock:" + eventId;
 
         DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
         redisScript.setScriptText(DECREMENT_STOCK_LUA);

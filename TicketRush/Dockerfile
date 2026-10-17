@@ -5,10 +5,13 @@ COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Sized for a 512MB free instance; override JAVA_OPTS if you have more room.
+ENV JAVA_OPTS="-Xmx300m -XX:+UseSerialGC"
+# SPRING_PROFILES_ACTIVE (e.g. demo) is read by Spring Boot straight from the environment.
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]

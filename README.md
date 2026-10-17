@@ -330,3 +330,22 @@ Bu proje, yüksek ölçekli sistem mimarileri ve yüksek eşzamanlılık senaryo
 - LinkedIn: [https://www.linkedin.com/in/tarikinandi/](https://www.linkedin.com/in/tarikinandi/)
 
 - Email: [inandi.tarik@gmail.com](mailto:inandi.tarik@gmail.com)
+## Public demo deployment
+
+The `demo` Spring profile replaces RabbitMQ with an in-process queue (one worker thread), so the backend needs only Postgres and Redis. Default behaviour (RabbitMQ) is unchanged when the profile is off. No secrets live in git; set these in the host's settings.
+
+Backend (Docker image in `TicketRush/`):
+
+- `SPRING_PROFILES_ACTIVE` (set to `demo`)
+- `PORT`
+- `DB_URL` (JDBC URL), `DB_USERNAME`, `DB_PASSWORD`, `DB_POOL_SIZE` (optional, default 5)
+- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_SSL` (`true` for TLS providers)
+- `REDIS_KEY_PREFIX` (optional; prefixes every Redis key so one Redis can be shared, e.g. `ticketrush:`)
+- `CORS_ORIGINS` (comma-separated frontend origins, also used for the WebSocket endpoint)
+- `JAVA_OPTS` (optional; default `-Xmx300m -XX:+UseSerialGC` for 512 MB instances)
+
+Health check: `GET /api/health`.
+
+Frontend (`ticketrush-ui/`, built by Vite):
+
+- `VITE_API_URL` (backend base URL, no trailing slash; used for REST and `/ws-ticket`)

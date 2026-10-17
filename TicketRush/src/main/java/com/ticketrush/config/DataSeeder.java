@@ -35,11 +35,10 @@ public class DataSeeder implements CommandLineRunner {
             ticketRedisService.setInitialStock(event.getId(), 10);
             System.out.println(" Etkinlik Oluşturuldu.");
         } else {
-            TicketEvent existingEvent = ticketEventRepository.findById(1L).orElse(null);
-            if(existingEvent != null) {
-                System.out.println("--- DB Dolu, Redis Senkronize Ediliyor ---");
-                ticketRedisService.setInitialStock(existingEvent.getId(), 10);
-            }
+            // Redis must mirror what is really left in the DB, otherwise a restart would resell tickets.
+            System.out.println("--- DB Dolu, Redis Senkronize Ediliyor ---");
+            ticketEventRepository.findAll().forEach(e ->
+                    ticketRedisService.setInitialStock(e.getId(), e.getStock()));
         }
 
         if (userRepository.count() == 0) {

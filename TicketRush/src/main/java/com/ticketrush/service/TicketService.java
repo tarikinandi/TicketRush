@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class TicketService {
 
     private final TicketRedisService ticketRedisService;
-    private final TicketProducer ticketProducer;
+    private final TicketQueue ticketQueue;
 
     public void buyTicket(Long userId, Long eventId){
 
@@ -19,7 +19,7 @@ public class TicketService {
             throw new TicketSoldOutException("Üzgünüz, bu etkinlik için tüm biletler tükendi! Stok: 0");
         }
 
-        ticketProducer.sendTicketRequest(new TicketRequest(userId, eventId));
+        ticketQueue.send(new TicketRequest(userId, eventId));
 
         System.out.println("User " + userId + " request send to queue.");
     }

@@ -1,6 +1,5 @@
 package com.ticketrush.service;
 
-import com.ticketrush.config.RabbitMQConfig;
 import com.ticketrush.domain.Order;
 import com.ticketrush.domain.TicketEvent;
 import com.ticketrush.domain.User;
@@ -9,7 +8,6 @@ import com.ticketrush.repository.OrderRepository;
 import com.ticketrush.repository.TicketEventRepository;
 import com.ticketrush.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +23,6 @@ public class TicketConsumer {
 
     private final TicketRedisService ticketRedisService;
 
-    @RabbitListener(queues = RabbitMQConfig.QUEUE_NAME)
     @Transactional
     public void consumeTicket(TicketRequest ticketRequest) {
 

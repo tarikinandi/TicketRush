@@ -1,7 +1,7 @@
 import { Client } from "@stomp/stompjs";
 import { useEffect, useRef, useState } from "react";
 import SockJS from "sockjs-client";
-import { buyTicket } from "../services/api";
+import { buyTicket, BASE_URL } from "../services/api";
 
 interface NotificationMessage {
     id: string;
@@ -19,7 +19,7 @@ const Dashboard = () => {
     const stompClientRef = useRef<Client | null>(null);
 
     useEffect(() => {
-        const socket = new SockJS("http://localhost:8080/ws-ticket");
+        const socket = new SockJS(`${BASE_URL}/ws-ticket`);
 
         const client = new Client({
             webSocketFactory: () => socket,
