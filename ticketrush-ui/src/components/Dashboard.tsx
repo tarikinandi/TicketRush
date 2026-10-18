@@ -2,6 +2,7 @@ import { Client } from "@stomp/stompjs";
 import { useEffect, useRef, useState } from "react";
 import SockJS from "sockjs-client";
 import { buyTicket, getStock, getVisitorId, BASE_URL } from "../services/api";
+import { useWakeState } from "../services/backendWake";
 
 interface NotificationMessage {
     id: string;
@@ -15,22 +16,30 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(false);
     const [stock, setStock] = useState<number | null>(null);
     const visitorId = getVisitorId();
+    const ready = useWakeState().phase === "ready";
 
     const refreshStock = () => {
         getStock(1).then(setStock).catch(() => setStock(null));
     };
 
-    useEffect(refreshStock, []);
+    // Runs again whenever the server comes back after sleeping.
+    useEffect(() => {
+        if (ready) refreshStock();
+    }, [ready]);
 
     const [myUserId] = useState(Math.floor(Math.random() * 1000) + 1);
 
     const stompClientRef = useRef<Client | null>(null);
 
     useEffect(() => {
-        const socket = new SockJS(`${BASE_URL}/ws-ticket`);
+        if (!ready) {
+            setStatus("Bağlanıyor...");
+            return;
+        }
 
         const client = new Client({
-            webSocketFactory: () => socket,
+            // A fresh socket per attempt: a closed SockJS instance cannot be reused by STOMP reconnects.
+            webSocketFactory: () => new SockJS(`${BASE_URL}/ws-ticket`),
             onConnect: () => {
                 setStatus("Canlı Bağlantı Sağlandı");
 
@@ -61,7 +70,7 @@ const Dashboard = () => {
         return () => {
             client.deactivate();
         };
-    }, [visitorId]);
+    }, [visitorId, ready]);
 
   const handleBuy = async () => {
         setLoading(true);
