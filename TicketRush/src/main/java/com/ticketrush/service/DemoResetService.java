@@ -3,6 +3,7 @@ package com.ticketrush.service;
 import com.ticketrush.repository.VisitorStockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Profile("demo")
+@Lazy(false) // owns the @Scheduled cleanup, so it must exist even with lazy-initialization on
 @RequiredArgsConstructor
 public class DemoResetService {
 
